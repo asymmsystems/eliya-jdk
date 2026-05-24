@@ -108,3 +108,13 @@ Per ADR-00009 (source file layout), Eliya source files live in a **separate top-
 Eliya's Phase 1 security value lies in forensic observability defaults (continuous JFR, heap-dump-on-OOM, crash-dump generation, GC logs - see §4) and supply-chain provenance (signed releases per ADR-00002).
 
 **Security tightening** - when it happens - is the explicit job of Phase 4 compliance profiles (`EliyaProfile=PCIDSS`, `=HIPAA`, `=SOX`, `=FedRAMP`, `=GDPR`, `=ISO27001`, `=SOC2`, plus three combined profiles for cross-framework coverage). These profiles are: (a) opt-in by design - none activate without an explicit operator-set flag; (b) framework-aligned - each profile's tightening maps to the named compliance framework's control requirements; (c) layered on top of upstream defaults, never by editing `java.security` in place. The two-layer flag taxonomy in ADR-00001 exists precisely to make this opt-in tightening expressible and auditable. The baseline file stays predictable; tightening becomes a deliberate operator choice, not a hidden Eliya default.
+
+## 7. Runtime requirements (portability floor)
+
+Eliya's Linux binaries are built against an old-glibc sysroot (ADR-00023) so a single artefact runs across the supported distribution range:
+
+- **glibc >= 2.17** (x86_64 and aarch64) - covers RHEL / CentOS / Oracle Linux 7+, Ubuntu 16.04+, Debian 8+, Amazon Linux 2, SUSE / SLES 12+, and derivatives. (`ldd --version` reports the installed glibc.)
+- **No separate `libstdc++` requirement** - the C++ runtime is linked statically (`--with-stdc++lib=static`), so there is no GLIBCXX floor; only glibc governs portability.
+- Minimum Linux **kernel 2.6.32** (the glibc-2.17 / OL7 pairing).
+
+The floor is pinned at build time by an OpenJDK GCC 14 devkit carrying a glibc-2.17 sysroot, and **enforced on every shipped binary** by `07c` (`objdump`: max `GLIBC_` symbol <= 2.17 and zero `GLIBCXX_`; `readelf` `.note.ABI-tag` kernel <= 2.6.32) - validated end-to-end on x86_64 (`libjli.so` GLIBC_2.14, `bin/asymm` GLIBC_2.4). The runtime-`dlopen`'d native libraries (fontconfig, X11, ALSA, CUPS) are declared as `.deb`/`.rpm` dependencies so the package manager pulls them on the target. See ADR-00023 for the full rationale and native-dependency matrix.
