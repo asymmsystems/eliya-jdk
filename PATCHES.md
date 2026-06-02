@@ -114,7 +114,7 @@ Eliya's Phase 1 security value lies in forensic observability defaults (continuo
 Eliya runs on every mainstream Linux distribution from 2011 onward. Per ADR-00023 rev. 2026-06-02 the floors are **per-architecture**, set by upstream OpenJDK `make/devkit/Tools.gmk`'s OL-branch defaults (verbatim, no Eliya override):
 
 **Linux x86_64:** `glibc >= 2.12` (Oracle Linux 6.4 sysroot)
-- Covers RHEL / CentOS / Oracle Linux 6+, Ubuntu 12.04+, Debian 7+, Amazon Linux 1+, SUSE / SLES 11+, and derivatives.
+- Covers RHEL / CentOS / Oracle Linux 6+, Ubuntu 12.04+, Debian 7+, Amazon Linux 1+, SUSE / SLES 12+, and derivatives.
 - Wider compatibility surface than Temurin's 2.17 floor on x86_64.
 
 **Linux aarch64:** `glibc >= 2.17` (Oracle Linux 7.6 sysroot)
