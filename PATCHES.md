@@ -111,10 +111,21 @@ Eliya's Phase 1 security value lies in forensic observability defaults (continuo
 
 ## 7. Runtime requirements (portability floor)
 
-Eliya's Linux binaries are built against an old-glibc sysroot (ADR-00023) so a single artefact runs across the supported distribution range:
+Eliya runs on every mainstream Linux distribution from 2011 onward. Per ADR-00023 rev. 2026-06-02 the floors are **per-architecture**, set by upstream OpenJDK `make/devkit/Tools.gmk`'s OL-branch defaults (verbatim, no Eliya override):
 
-- **glibc >= 2.17** (x86_64 and aarch64) - covers RHEL / CentOS / Oracle Linux 7+, Ubuntu 16.04+, Debian 8+, Amazon Linux 2, SUSE / SLES 12+, and derivatives. (`ldd --version` reports the installed glibc.)
+**Linux x86_64:** `glibc >= 2.12` (Oracle Linux 6.4 sysroot)
+- Covers RHEL / CentOS / Oracle Linux 6+, Ubuntu 12.04+, Debian 7+, Amazon Linux 1+, SUSE / SLES 11+, and derivatives.
+- Wider compatibility surface than Temurin's 2.17 floor on x86_64.
+
+**Linux aarch64:** `glibc >= 2.17` (Oracle Linux 7.6 sysroot)
+- Covers RHEL / CentOS / Oracle Linux 7+, Ubuntu 16.04+, Debian 8+, Amazon Linux 2+, SUSE / SLES 12+, and derivatives.
+- arm64 production Linux floors at 2.17 (no glibc 2.12 on arm64).
+
+Verify on the target: `ldd --version` reports the installed glibc.
+
+**Other invariants (same on both arches):**
+
 - **No separate `libstdc++` requirement** - the C++ runtime is linked statically (`--with-stdc++lib=static`), so there is no GLIBCXX floor; only glibc governs portability.
-- Minimum Linux **kernel 2.6.32** (the glibc-2.17 / OL7 pairing).
+- Minimum Linux **kernel 2.6.32** on both arches (both OL6.4 and OL7.6 ship glibc built with `--enable-kernel=2.6.32`).
 
-The floor is pinned at build time by an OpenJDK GCC 14 devkit carrying a glibc-2.17 sysroot, and **enforced on every shipped binary** by `07c` (`objdump`: max `GLIBC_` symbol <= 2.17 and zero `GLIBCXX_`; `readelf` `.note.ABI-tag` kernel <= 2.6.32) - validated end-to-end on x86_64 (`libjli.so` GLIBC_2.14, `bin/asymm` GLIBC_2.4). The runtime-`dlopen`'d native libraries (fontconfig, X11, ALSA, CUPS) are declared as `.deb`/`.rpm` dependencies so the package manager pulls them on the target. See ADR-00023 for the full rationale and native-dependency matrix.
+The per-arch floor is pinned at build time by an OpenJDK GCC 14 devkit carrying the matching per-arch OL sysroot, and **enforced on every shipped binary** by `07c` (`objdump`: max `GLIBC_` symbol `<=` the per-arch ceiling and zero `GLIBCXX_`; `readelf` `.note.ABI-tag` kernel `<=` 2.6.32). The runtime-`dlopen`'d native libraries (fontconfig, X11, ALSA, CUPS) are declared as `.deb`/`.rpm` dependencies so the package manager pulls them on the target. See ADR-00023 for the full rationale and native-dependency matrix.
