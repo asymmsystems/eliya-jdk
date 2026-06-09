@@ -42,7 +42,7 @@ sdk install java 25.0.3-eliya
 **tar.gz** (manual install)
 
 ```bash
-curl -fsSLO https://github.com/asymmsystems/eliya-jdk/releases/download/25.0.3-eliya/eliya-jdk-25.0.3-linux-x64.tar.gz
+curl -fsSLO https://github.com/asymmsystems/eliya-jdk/releases/download/eliya-jdk-25.0.3/eliya-jdk-25.0.3-linux-x64.tar.gz
 tar xzf eliya-jdk-25.0.3-linux-x64.tar.gz
 export JAVA_HOME=$(pwd)/eliya-jdk-25.0.3
 export PATH=$JAVA_HOME/bin:$PATH
