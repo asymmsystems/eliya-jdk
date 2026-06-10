@@ -2,7 +2,7 @@
 
 **The forensic-grade JVM platform from Asymm Systems for compliance-conscious production.**
 
-Eliya is an OpenJDK distribution from Asymm Systems engineered for compliance-conscious production in regulated industries — operations that demand continuous observability, precise diagnostic attribution, and audit-ready artifacts. **Four phases of differentiation:** production observability defaults today; bundled local diagnostic tooling, cross-artefact correlation analysis, and compliance-aligned profiles ahead.
+Eliya is an OpenJDK distribution from Asymm Systems engineered for compliance-conscious production in regulated industries — operations that demand continuous observability, precise diagnostic attribution, and audit-ready artifacts. **Four phases of differentiation:** operational-readiness defaults today; continuous observability, bundled local diagnostic tooling, cross-artefact correlation analysis, and compliance-aligned profiles ahead.
 
 Canonical home: [asymm.systems/product/eliya](https://asymm.systems/product/eliya).
 

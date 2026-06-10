@@ -57,14 +57,21 @@ Crash dumps follow the same layout under a `crash/` category, producing a file p
 
 When `EliyaProfile=Production`, Eliya sets the following defaults - *only* when the user has not set the flag explicitly on the command line. This preserves user-explicit-wins semantics: any value the operator passes on the command line beats Eliya's default.
 
-1. **Continuous JFR** - `FlightRecorder=true` plus a `StartFlightRecording` recording spec (`disk=true, maxage=24h, maxsize=250m, dumponexit=true`) using `build_eliya_path("jfr")`.
-2. **Heap dump on OOM** - `HeapDumpOnOutOfMemoryError=true`, with `HeapDumpPath` set to `build_eliya_path("heap-dumps")`.
-3. **Native Memory Tracking summary** - `NativeMemoryTracking="summary"`.
-4. **Always-on GC logs** - unified-logging GC configuration writing under `build_eliya_path("gc")` with rotation.
-5. **Container awareness** - `UseContainerSupport=true` (reinforces upstream default).
-6. **Crash dump generation** - `ErrorFile` set to `build_eliya_error_file_path()`; `CreateCoredumpOnCrash=true`.
-7. **Adaptive diagnostic path layout** - all path-bearing flags above use the layout from §2–§3, giving ADR-00006's `service/replica/category` structure (collapsing to `service/category` when replica attribution is not meaningful) without per-deployment configuration.
-8. **Unlocked diagnostic VM options** - `UnlockDiagnosticVMOptions=true`, enabling subsequent diagnostic flags operators may want.
+### Phase 1 (shipped 25.0.3 — six ergonomics activated via `FLAG_SET_ERGO`)
+
+1. **Heap dump on OOM** - `HeapDumpOnOutOfMemoryError=true`, with `HeapDumpPath` set to `build_eliya_path("heap-dumps")`.
+2. **Native Memory Tracking summary** - `NativeMemoryTracking="summary"`.
+3. **Container awareness** - `UseContainerSupport=true` (reinforces upstream default).
+4. **Crash dump generation** - `ErrorFile` set to `build_eliya_error_file_path()`; `CreateCoredumpOnCrash=true`.
+5. **Adaptive diagnostic path layout** - all path-bearing flags above use the layout from §2–§3, giving ADR-00006's `service/replica/category` structure (collapsing to `service/category` when replica attribution is not meaningful) without per-deployment configuration.
+6. **Unlocked diagnostic VM options** - `UnlockDiagnosticVMOptions=true`, enabling subsequent diagnostic flags operators may want.
+
+### Phase 2 additions (planned — reclassified from Phase 1.5 per ADR-1 sec.11 2026-06-11)
+
+Two additional defaults are planned for Phase 2 alongside the bundled diagnostic tools work. They cannot use `FLAG_SET_ERGO` (the activation mechanism is not a product flag); they need `JfrOptionSet` / `LogConfiguration` hooks. Source has `TODO(Phase1.5)` comments at `apply_production_profile()` lines 239 + 261 — target timeline shifted to Phase 2 per ADR-1 sec.11 dissolution row 2026-06-11.
+
+- **Continuous JFR (Phase 2)** - `FlightRecorder=true` plus a `StartFlightRecording` recording spec (`disk=true, maxage=24h, maxsize=250m, dumponexit=true`) using `build_eliya_path("jfr")`.
+- **Always-on GC logs (Phase 2)** - unified-logging GC configuration writing under `build_eliya_path("gc")` with rotation.
 
 ## 5. Three-Tier Conflict Detection
 
@@ -78,7 +85,7 @@ The matrix is small in Phase 1 (only `Production` and `None` exist) and grows as
 
 ## 6. Minimal Patch Surface
 
-Eliya's patch surface is intentionally surgical. Minimal upstream divergence is a design principle, not a side effect: by avoiding deep modifications to the HotSpot VM, Eliya guarantees zero API divergence, eliminates the risk of fork drift, and keeps each quarterly upstream CPU mergeable within days rather than weeks.
+Eliya's patch surface is intentionally surgical. Minimal upstream divergence is a design principle, not a side effect: by avoiding deep modifications to the HotSpot VM, Eliya delivers no Java SE API divergence (the two new flags `EliyaProfile` + `EliyaConflictCheck` are `-XX` JVM options, not Java SE APIs), minimises fork-drift risk, and keeps each quarterly upstream CPU mergeable within days rather than weeks.
 
 Per ADR-00009 (source file layout), Eliya source files live in a **separate top-level mirror tree** at `src/eliya/hotspot/share/...` parallel to upstream's `src/hotspot/share/...`. Tests live at `test/eliya/hotspot/jtreg/...` per ADR-00011. Upstream-file intrusion is reduced to **single-line delegations** that are touched once and never again across phases.
 
