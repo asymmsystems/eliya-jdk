@@ -10,8 +10,8 @@ All notable releases of Eliya are documented here. Newest first.
   `-XX:EliyaProfile=Production` (ccstr enum, Phase 1) and
   `-XX:EliyaConflictCheck` (bool, default `true`).
 - Activates eight observability defaults when
-  `EliyaProfile=Production`: continuous JFR, heap-dump-on-OOM,
-  NMT summary, always-on GC logs, container awareness, crash dump
+  `EliyaProfile=Production`: continuous JFR (Phase 2), heap-dump-on-OOM,
+  NMT summary, GC logs (Phase 2 continuous-by-default), container awareness, crash dump
   generation, adaptive diagnostic path layout (per ADR-00006),
   unlocked diagnostic VM options.
 - `java.security` is bit-identical to upstream - see PATCHES.md §6.

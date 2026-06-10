@@ -103,7 +103,7 @@ Full verification walkthrough: [Verify your download](https://asymm.systems/prod
 java -XX:EliyaProfile=Production -jar myapp.jar
 ```
 
-The single flag activates Eliya's production-readiness defaults — continuous JFR, heap-dump-on-OOM, NMT summary, always-on GC logs, container awareness, crash dump generation, three-level diagnostic path layout, unlocked diagnostic VM options. When something fails at 03:00, the last 24 hours of execution profile is already on disk.
+The single flag activates Eliya's production-readiness defaults — continuous JFR (Phase 2), heap-dump-on-OOM, NMT summary, GC logs (Phase 2 continuous-by-default), container awareness, crash dump generation, three-level diagnostic path layout, unlocked diagnostic VM options. When something fails at 03:00, the last 24 hours of execution profile is already on disk.
 
 JFR with the `default` profile carries **<1% CPU overhead** in typical production workloads — validated independently by Oracle, Datadog, New Relic, Microsoft, and Red Hat across the OpenJDK ecosystem since JFR went open-source in 2018. Full performance analysis: [Flags reference §Performance impact](https://asymm.systems/product/eliya/user-guide/flags-reference.html#performance-impact).
 
