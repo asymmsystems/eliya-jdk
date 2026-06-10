@@ -27,7 +27,7 @@ Eliya follows OpenJDK's quarterly security patch cadence (January, April, July, 
 
 1. We rebuild Eliya against the patched upstream within 1–2 weeks.
 2. Signed release artefacts (`tar.gz`, `.deb`, `.rpm`, `SHA256SUMS.txt`, `SHA256SUMS.txt.asc`) are published to GitHub Releases.
-3. Multi-arch container images are published to GHCR (`ghcr.io/asymmsystems/eliya:25-lts`, `:25.0.N`).
+3. Multi-arch container images are published to GHCR (`ghcr.io/asymmsystems/eliya-jdk:25-lts`, `:25.0.N`).
 4. The SDKman candidate list is updated (`sdk install java <new-version>-eliya`).
 5. `CHANGELOG.md` records the release and its upstream baseline.
 

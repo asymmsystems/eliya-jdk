@@ -65,10 +65,10 @@ rpm -i eliya-jdk-25.0.3.x86_64.rpm
 
 ```bash
 # Version-pin (immutable per release):
-docker pull ghcr.io/asymmsystems/eliya:25.0.3
+docker pull ghcr.io/asymmsystems/eliya-jdk:25.0.3
 
 # LTS-track (auto-moves with each quarterly refresh):
-docker pull ghcr.io/asymmsystems/eliya:25-lts
+docker pull ghcr.io/asymmsystems/eliya-jdk:25-lts
 ```
 
 Full install guides: [Linux](https://asymm.systems/product/eliya/user-guide/install-linux.html) · [Docker](https://asymm.systems/product/eliya/user-guide/install-docker.html) · [macOS](https://asymm.systems/product/eliya/user-guide/install-macos.html) · [FreeBSD](https://asymm.systems/product/eliya/user-guide/install-freebsd.html).
