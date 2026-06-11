@@ -14,7 +14,7 @@ The JVM platform foundation for Asymm Systems' compliance-tooling ecosystem, str
 
 | Phase | Status | What ships |
 |---|---|---|
-| **Phase 1** | NOW | Production observability defaults activated by a single flag — Java Flight Recorder always-on, heap dump on OOM, native memory tracking, GC logging, predictable diagnostic paths under `/var/log/eliya/${SERVICE}/`. All running locally; no SaaS dependencies. Linux x86_64 + aarch64 + FreeBSD Research Preview. `asymm` CLI minimum surface. |
+| **Phase 1** | NOW | Six operational-readiness ergonomics activated by `-XX:EliyaProfile=Production` — heap-dump-on-OOM with structured path, exit-on-OOM, Native Memory Tracking summary, predictable crash log path, container support reinforced, diagnostic VM options unlocked (which makes JFR + async-profiler trivially usable today via one-flag activation). Predictable diagnostic paths under `/var/log/eliya/${SERVICE}/`. All running locally; no SaaS dependencies. Linux x86_64 + aarch64 + FreeBSD Research Preview. `asymm` CLI minimum surface. |
 | **Phase 2** | 2026-2027 | Bundled local diagnostic tools (Eclipse MAT headless, async-profiler), FIPS variant for BFSI/healthcare/government procurement, hosted apt/yum repositories, macOS aarch64 binary, `asymm eliya` profiling and heap analysis subcommands. |
 | **Phase 3** | Post-Series-A | [Asymm Forensics](https://asymm.systems/product/forensics) — JVM diagnostic forensics platform with cross-artefact correlation analysis, ML-based pattern detection, compliance reporting (PCI DSS, HIPAA, SOX), Dial-aware analysis. |
 | **Phase 4** | Post-Dial OaC expansion | Compliance-aligned profiles — defaults aligned with the framework your industry requires. |
@@ -103,7 +103,7 @@ Full verification walkthrough: [Verify your download](https://asymm.systems/prod
 java -XX:EliyaProfile=Production -jar myapp.jar
 ```
 
-The single flag activates Eliya's production-readiness defaults — continuous JFR (Phase 2), heap-dump-on-OOM, NMT summary, GC logs (Phase 2 continuous-by-default), container awareness, crash dump generation, three-level diagnostic path layout, unlocked diagnostic VM options. When something fails at 03:00, the last 24 hours of execution profile is already on disk.
+The single flag activates Eliya's Phase 1 operational-readiness defaults (six ergonomics, shipped 25.0.3): heap-dump-on-OOM with structured path, exit-on-OOM, Native Memory Tracking summary, predictable crash log path, container support reinforced, and diagnostic VM options unlocked (which makes JFR + async-profiler trivially usable today via one-flag activation). When something fails at 03:00, heap dumps land in a predictable path, NMT summary shows native memory state, and the crash log is where you expect — the post-incident forensic artefacts are already in place. Phase 2 (post-seed) adds continuous JFR with 24h rolling buffer + unified GC logging as defaults under the same flag, so the data is streaming when the incident happens, not just the post-mortem artefacts.
 
 JFR with the `default` profile carries **<1% CPU overhead** in typical production workloads — validated independently by Oracle, Datadog, New Relic, Microsoft, and Red Hat across the OpenJDK ecosystem since JFR went open-source in 2018. Full performance analysis: [Flags reference §Performance impact](https://asymm.systems/product/eliya/user-guide/flags-reference.html#performance-impact).
 
