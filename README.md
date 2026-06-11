@@ -145,7 +145,7 @@ When JDK 29 LTS arrives (September 2027 expected), Eliya 29 ships from its GA an
 
 ## Build provenance
 
-Eliya is **built reproducibly from upstream source**. Customers can rebuild from [eliya-jdk-platform@release/25.0.3](https://github.com/asymmsystems/eliya-jdk-platform/tree/release/25.0.3) and verify byte-identical output via diffoscope.
+Eliya is **built reproducibly from upstream source**. Customers can rebuild from [eliya-jdk-platform-ops@release/25.0.3](https://github.com/asymmsystems/eliya-jdk-platform-ops/tree/release/25.0.3) and verify byte-identical output via diffoscope.
 
 Every release ships with `SHA256SUMS.txt.asc` covering all per-arch artefacts. The signing-key fingerprint above is the authoritative identifier of an Eliya release.
 
