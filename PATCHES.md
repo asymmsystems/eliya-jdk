@@ -62,7 +62,7 @@ When `EliyaProfile=Production`, Eliya sets the following defaults - *only* when 
 1. **Heap dump on OOM** - `HeapDumpOnOutOfMemoryError=true`, with `HeapDumpPath` set to `build_eliya_path("heap-dumps")`.
 2. **Exit on OOM** - `ExitOnOutOfMemoryError=true`. The process exits non-zero when an `OutOfMemoryError` is thrown, letting orchestrators (systemd, Kubernetes) restart on a clean baseline rather than degrade in place.
 3. **Native Memory Tracking summary** - `NativeMemoryTracking="summary"`.
-4. **Predictable crash log path** - `ErrorFile` set to `build_eliya_error_file_path()`; `CreateCoredumpOnCrash=true`. The path-bearing flags at items 1 and 4 use the `service/replica/category` layout from §2-§3 (collapsing to `service/category` when replica attribution is not meaningful), so post-mortem artefacts land in a predictable location without per-deployment configuration.
+4. **Predictable crash log path** - `ErrorFile` set to `build_eliya_error_file_path()`; `CreateCoredumpOnCrash=true`. The path-bearing flags at items 1 and 4 use the `service/replica/category` layout from sections 2-3 (collapsing to `service/category` when replica attribution is not meaningful), so post-mortem artefacts land in a predictable location without per-deployment configuration.
 5. **Container support reinforced** - `UseContainerSupport=true`. No-op when already set; recorded explicitly so operators auditing flags see the value originated from `EliyaProfile=Production`.
 6. **Unlocked diagnostic VM options** - `UnlockDiagnosticVMOptions=true`, enabling subsequent diagnostic flags operators may want.
 
@@ -81,38 +81,19 @@ Conflict detection runs at JVM startup. Gated by `-XX:-EliyaConflictCheck` for a
 - **Tier 2 - Warning.** Redundant flag combinations (profile already activates a capability that the user also explicitly enables) emit a stderr warning prefixed `[Eliya] Warning:`. JVM continues normally.
 - **Tier 3 - Fatal.** Profile + capability negation that breaks the profile's invariants emits `[Eliya] Fatal:` and aborts startup. The message names the conflict, the profile invariant, and the three escape hatches (`EliyaProfile=None`, drop the negation, compose capabilities directly).
 
-The matrix is small in Phase 1 (only `Production` and `None` exist) and grows as Phase 2 capability flags and Phase 4 profile values land. Profile-vs-profile collisions are impossible by syntax - the `ccstr` flag has last-wins semantics.
+**Phase 1 scope:** the matrix is empty. Phase 1 ships only `EliyaProfile=Production`, `EliyaProfile=None`, and the six profile-set ergonomics; all six respect `FLAG_IS_CMDLINE` and resolve as tier-1 silent overrides. No tier-2 or tier-3 events can fire because there are no opposing capability flags yet.
+
+`-XX:EliyaConflictCheck` ships in 25.0.3 to establish the public flag namespace and the dispatch integration point before they carry weight. Operators baking JVM flags into deploy scripts today can adopt `-XX:-EliyaConflictCheck` now and not have to revise the command line when Phase 2 capability flags land. The dispatch is gated by the flag and calls `check_flag_consistency()` whose body populates as Phase 2 capability flags and Phase 4 profile values introduce real conflict cases. Profile-vs-profile collisions are impossible by syntax (the `ccstr` flag has last-wins semantics).
 
 ## 6. Minimal Patch Surface
 
 Eliya's patch surface is intentionally surgical. Minimal upstream divergence is a design principle, not a side effect: by avoiding deep modifications to the HotSpot VM, Eliya delivers no Java SE API divergence (the two new flags `EliyaProfile` + `EliyaConflictCheck` are `-XX` JVM options, not Java SE APIs), minimises fork-drift risk, and keeps each quarterly upstream CPU mergeable within days rather than weeks.
 
-Per ADR-00009 (source file layout), Eliya source files live in a **separate top-level mirror tree** at `src/eliya/hotspot/share/...` parallel to upstream's `src/hotspot/share/...`. Tests live at `test/eliya/hotspot/jtreg/...` per ADR-00011. Upstream-file intrusion is reduced to **single-line delegations** that are touched once and never again across phases.
-
-### Eliya-owned source files (separate tree, all new)
-
-| Eliya file | Role |
-|---|---|
-| `src/eliya/hotspot/share/runtime/eliya.{hpp,cpp}` | Top-level facade - `Eliya::apply()` dispatched from upstream `apply_ergo()` |
-| `src/eliya/hotspot/share/runtime/eliyaArguments.{hpp,cpp}` | Diagnostic-path resolution, production-profile activator, three-tier conflict checker |
-| `src/eliya/hotspot/share/runtime/flags/eliyaFlags.{hpp,cpp}` | Data-driven `EliyaProfile` validation + activation table (`KNOWN_PROFILES[]`); `EliyaProfileConstraintFunc` body |
-| `test/eliya/hotspot/jtreg/runtime/Eliya/EliyaProfileValidation.java` | JTREG: constraint accepts None/Production; rejects all 10 Phase 4 reserved names |
-| `test/eliya/hotspot/jtreg/runtime/Eliya/EliyaDiagnosticPathTest.java` | JTREG: env-over-sysprop precedence, replica suppression, three-level vs two-level paths |
-
-### Upstream-file intrusion (touched once, then never again)
-
-| Upstream file | Change | Lines |
-|---|---|---|
-| `src/hotspot/share/runtime/globals.hpp` | Two flag declarations (`EliyaProfile` ccstr, `EliyaConflictCheck` bool) + `constraint(EliyaProfileConstraintFunc, AtParse)` directive | 12 |
-| `src/hotspot/share/runtime/flags/jvmFlagConstraintsRuntime.hpp` | One entry added to the `RUNTIME_CONSTRAINTS` macro list: `f(ccstr, EliyaProfileConstraintFunc)` | 1 |
-| `src/hotspot/share/runtime/arguments.cpp` | `#include "runtime/eliya.hpp"` + single-line `Eliya::apply();` call at end of `apply_ergo()` | 2 |
-| `make/hotspot/lib/JvmFlags.gmk` | `JVM_SRC_ROOTS += $(TOPDIR)/src/eliya/hotspot` so the build glob picks up the Eliya mirror tree (per ADR-00009 §2.2) | 1 |
-
-**Approximately 16 lines** of upstream-file modification total, all of which are touched once during ISSUE-00001 and never again across phases. Adding a Phase 4 profile activator changes only `eliyaFlags.cpp`'s `KNOWN_PROFILES[]` table + `eliyaArguments.cpp` activator body. Adding a new Phase 2+ diagnostic category changes only `eliyaArguments.cpp`'s `Category` enum + `CATEGORY_NAMES[]` array.
+Eliya source files live in a separate mirror tree alongside the upstream sources; upstream-file intrusion is limited to single-line delegations that are touched once and never again across phases. This keeps each quarterly upstream CPU a mechanical merge rather than a per-release reconciliation, and keeps the auditable diff between upstream OpenJDK 25 and Eliya 25 small by construction.
 
 **Security posture predictability** - `conf/security/java.security` is bit-identical to upstream. Cryptographic policy, TLS algorithm enablement, JCE configuration, certificate trust anchors, and the disabled-algorithms lists are precisely as upstream OpenJDK 25 ships them. Operators auditing crypto/TLS policy can rely on upstream's documented behaviour without re-baselining against an Eliya-specific defaults file.
 
-Eliya's Phase 1 security value lies in forensic observability defaults activated by `EliyaProfile=Production` (the six ergonomics enumerated in §4) and supply-chain provenance (signed releases per ADR-00002). Continuous JFR and unified GC logging are Phase 2 work, not active in 25.0.3.
+Eliya's Phase 1 security value lies in forensic observability defaults activated by `EliyaProfile=Production` (the six ergonomics enumerated in section 4) and supply-chain provenance (signed releases per ADR-00002). Continuous JFR and unified GC logging are Phase 2 work, not active in 25.0.3.
 
 **Security tightening** - when it happens - is the explicit job of Phase 4 compliance profiles (`EliyaProfile=PCIDSS`, `=HIPAA`, `=SOX`, `=FedRAMP`, `=GDPR`, `=ISO27001`, `=SOC2`, plus three combined profiles for cross-framework coverage). These profiles are: (a) opt-in by design - none activate without an explicit operator-set flag; (b) framework-aligned - each profile's tightening maps to the named compliance framework's control requirements; (c) layered on top of upstream defaults, never by editing `java.security` in place. The two-layer flag taxonomy in ADR-00001 exists precisely to make this opt-in tightening expressible and auditable. The baseline file stays predictable; tightening becomes a deliberate operator choice, not a hidden Eliya default.
 

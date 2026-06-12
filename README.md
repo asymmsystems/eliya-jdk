@@ -2,7 +2,7 @@
 
 **The forensic-grade JVM platform from Asymm Systems for compliance-conscious production.**
 
-Eliya is an OpenJDK distribution from Asymm Systems engineered for compliance-conscious production in regulated industries — operations that demand continuous observability, precise diagnostic attribution, and audit-ready artifacts. **Four phases of differentiation:** operational-readiness defaults today; continuous observability, bundled local diagnostic tooling, cross-artefact correlation analysis, and compliance-aligned profiles ahead.
+Eliya is an OpenJDK distribution from Asymm Systems built for compliance-conscious production in regulated industries: operations that need continuous observability, precise diagnostic attribution, and audit-ready artefacts. The roadmap below shows what ships today and what arrives across Phase 2 to Phase 4.
 
 Canonical home: [asymm.systems/product/eliya](https://asymm.systems/product/eliya).
 
@@ -14,14 +14,14 @@ The JVM platform foundation for Asymm Systems' compliance-tooling ecosystem, str
 
 | Phase | Status | What ships |
 |---|---|---|
-| **Phase 1** | NOW | Six operational-readiness ergonomics activated by `-XX:EliyaProfile=Production` — heap-dump-on-OOM with structured path, exit-on-OOM, Native Memory Tracking summary, predictable crash log path, container support reinforced, diagnostic VM options unlocked (which makes JFR + async-profiler trivially usable today via one-flag activation). Predictable diagnostic paths under `/var/log/eliya/${SERVICE}/`. All running locally; no SaaS dependencies. Linux x86_64 + aarch64 + FreeBSD Research Preview. `asymm` CLI minimum surface. |
-| **Phase 2** | 2026-2027 | Bundled local diagnostic tools (Eclipse MAT headless, async-profiler), FIPS variant for BFSI/healthcare/government procurement, hosted apt/yum repositories, macOS aarch64 binary, `asymm eliya` profiling and heap analysis subcommands. |
-| **Phase 3** | Target 2027 | [Asymm Forensics](https://asymm.systems/product/forensics) — JVM diagnostic forensics platform with cross-artefact correlation analysis, ML-based pattern detection, compliance reporting (PCI DSS, HIPAA, SOX), Dial-aware analysis. |
-| **Phase 4** | Demand-gated | Compliance-aligned profiles — defaults aligned with the framework your industry requires. |
+| **Phase 1** | NOW | Six operational-readiness ergonomics activated by `-XX:EliyaProfile=Production`: heap-dump-on-OOM with structured path, exit-on-OOM, Native Memory Tracking summary, predictable crash log path, container support reinforced, diagnostic VM options unlocked. Predictable diagnostic paths under `/var/log/eliya/${SERVICE}/`. Linux x86_64 + aarch64 + FreeBSD Research Preview. `asymm` CLI minimum surface. |
+| **Phase 2** | 2026-2027 | Continuous JFR and unified GC logging as defaults under `EliyaProfile=Production`. Bundled local diagnostic tools (Eclipse MAT headless, async-profiler). FIPS variant for BFSI/healthcare/government procurement. Hosted apt/yum repositories. macOS aarch64 binary. `asymm eliya` profiling and heap-analysis subcommands. |
+| **Phase 3** | Target 2027 | [Asymm Forensics](https://asymm.systems/product/forensics): JVM diagnostic forensics platform with cross-artefact correlation analysis, ML-based pattern detection, compliance reporting (PCI DSS, HIPAA, SOX), Dial-aware analysis. |
+| **Phase 4** | Demand-gated | Compliance-aligned profiles: defaults aligned with the framework your industry requires. |
 
-Built from the same upstream OpenJDK source tree. Quarterly CPU cadence preserved — every upstream security patch flows into Eliya within two weeks. API semantics inherited from upstream; an application that runs on upstream OpenJDK runs on Eliya. The HotSpot VM underneath is upstream; Eliya contributes the strategic-direction overlay, the operational packaging, and the audit-ready release pipeline.
+Built from the same upstream OpenJDK source tree. Quarterly CPU cadence preserved: every upstream security patch flows into Eliya within two weeks. API semantics inherited from upstream; an application that runs on upstream OpenJDK runs on Eliya. The HotSpot VM is upstream; Eliya adds the operational packaging, the two `-XX` profile flags, the `asymm` CLI, and the signing and release pipeline.
 
-[Dial](https://asymm.systems/product/dial) — the TMF/ODA-native programming language from Asymm Systems — targets any JDK 25+: Corretto, Temurin, Zulu, Oracle, Liberica, Eliya. Eliya is the recommended runtime because its observability defaults align with how Dial workflows are typically diagnosed; many users adopt the pairing for that reason.
+[Dial](https://asymm.systems/product/dial), the TMF/ODA-native developer ecosystem from Asymm Systems, targets any JDK 25+: Corretto, Temurin, Zulu, Oracle, Liberica, Eliya. Eliya is the recommended runtime because its observability defaults align with how Dial workflows are typically diagnosed; many users adopt the pairing for that reason.
 
 ## Available Versions
 
@@ -29,7 +29,7 @@ Built from the same upstream OpenJDK source tree. Quarterly CPU cadence preserve
 |---|---|---|---|
 | **Eliya 25** | OpenJDK 25.0.3 | through September 2029 | Latest |
 
-Eliya ships a single LTS line. JDK 25 is the current target because it is the newest LTS. JDK 21 is well-served by existing vendors; the marginal value of another JDK 21 build is low. JDK 29 LTS will be added at its GA (September 2027) with a 24-month overlap. **Non-LTS releases (26, 27, 28, 30, ...) are categorically never published** — the six-month upstream patch window is incompatible with Eliya's compliance-conscious positioning. See [ADR-00005](https://github.com/asymmsystems/asymm-jdk/blob/main/architecture/decision/adr-00005-jdk-version-targeting.md).
+Eliya ships a single LTS line. JDK 25 is the current target because it is the newest LTS. JDK 21 is well-served by existing vendors; the marginal value of another JDK 21 build is low. JDK 29 LTS will be added at its GA (September 2027) with a 24-month overlap. **Non-LTS releases (26, 27, 28, 30, ...) are not published**: the six-month upstream patch window is incompatible with Eliya's compliance-conscious positioning. See [ADR-00005](https://github.com/asymmsystems/asymm-jdk/blob/main/architecture/decision/adr-00005-jdk-version-targeting.md).
 
 ## Install
 
@@ -103,21 +103,16 @@ Full verification walkthrough: [Verify your download](https://asymm.systems/prod
 java -XX:EliyaProfile=Production -jar myapp.jar
 ```
 
-The single flag activates Eliya's Phase 1 operational-readiness defaults (six ergonomics, shipped 25.0.3): heap-dump-on-OOM with structured path, exit-on-OOM, Native Memory Tracking summary, predictable crash log path, container support reinforced, and diagnostic VM options unlocked (which makes JFR + async-profiler trivially usable today via one-flag activation). When something fails at 03:00, heap dumps land in a predictable path, NMT summary shows native memory state, and the crash log is where you expect — the post-incident forensic artefacts are already in place. Phase 2 (target H2 2026) adds continuous JFR with 24h rolling buffer + unified GC logging as defaults under the same flag, so the data is streaming when the incident happens, not just the post-mortem artefacts.
+The flag activates Eliya's Phase 1 operational-readiness defaults (six ergonomics, shipped 25.0.3): heap-dump-on-OOM with structured path, exit-on-OOM, Native Memory Tracking summary, predictable crash log path, container support reinforced, and diagnostic VM options unlocked. Post-incident artefacts (heap dump, NMT summary, crash log) land at predictable paths under `/var/log/eliya/${SERVICE}/`. Phase 2 adds continuous JFR and unified GC logging as defaults under the same flag.
 
-JFR with the `default` profile carries **<1% CPU overhead** in typical production workloads — validated independently by Oracle, Datadog, New Relic, Microsoft, and Red Hat across the OpenJDK ecosystem since JFR went open-source in 2018. Full performance analysis: [Flags reference §Performance impact](https://asymm.systems/product/eliya/user-guide/flags-reference.html#performance-impact).
+Flag breakdown and override semantics: [Flags reference](https://asymm.systems/product/eliya/user-guide/flags-reference.html). Two-layer flag architecture (Layer 1 capabilities + Layer 2 profile): [Flag architecture](https://asymm.systems/product/eliya/user-guide/flag-architecture.html).
 
-Flag breakdown + override semantics: [Flags reference](https://asymm.systems/product/eliya/user-guide/flags-reference.html). Two-layer flag architecture (Layer 1 capabilities + Layer 2 profile): [Flag architecture](https://asymm.systems/product/eliya/user-guide/flag-architecture.html).
-
-## What's actually different from upstream OpenJDK
-
-Engineers want a precise diff, not marketing tone.
+## What's different from upstream OpenJDK
 
 **What's different:**
-- One JVM flag: `-XX:EliyaProfile=Production` (off by default)
-- Two helper functions in `arguments.cpp` for service name resolution and diagnostic-path construction
-- The `asymm` CLI installed at `bin/asymm` — a native ELF launcher per [ADR-00020](https://github.com/asymmsystems/asymm-jdk/blob/main/architecture/decision/adr-00020-elf-launchers-and-execstack.md), executing the unified Asymm Systems CLI surface for diagnostics and operations
-- `/var/log/eliya/` directory created by RPM/DEB postinstall
+- Two JVM flags: `-XX:EliyaProfile=Production` (ccstr; default `None`) and `-XX:EliyaConflictCheck` (bool; default `true`)
+- The `asymm` CLI installed at `bin/asymm`, a native ELF launcher per [ADR-00020](https://github.com/asymmsystems/asymm-jdk/blob/main/architecture/decision/adr-00020-elf-launchers-and-execstack.md), executing the Asymm Systems CLI surface for diagnostics and operations
+- `/var/log/eliya/` directory created by RPM and DEB post-install
 
 **What's inherited unchanged from upstream:**
 - GC selection (JDK 25 ergonomics)
@@ -132,11 +127,11 @@ Full enumeration: [Differences from upstream OpenJDK 25](https://asymm.systems/p
 
 ## Maintenance contract
 
-Eliya refreshes at every upstream OpenJDK GA — once per quarter, within two weeks of upstream:
+Eliya refreshes at every upstream OpenJDK GA, once per quarter, within two weeks of upstream:
 
 | Eliya release | Upstream base | Ship target |
 |---|---|---|
-| 25.0.3 (this) | OpenJDK 25.0.3 | First GA — June 2026 |
+| 25.0.3 (this) | OpenJDK 25.0.3 | First GA, June 2026 |
 | 25.0.4 | OpenJDK 25.0.4 | ~2026-07-22 |
 | 25.0.5 | OpenJDK 25.0.5 | ~2026-10-21 |
 | 25.0.6 ... | quarterly per upstream | through JDK 25 LTS window (September 2029) |
@@ -151,7 +146,7 @@ Every release ships with `SHA256SUMS.txt.asc` covering all per-arch artefacts. T
 
 ## Not sure Eliya is right for you?
 
-[Choosing a JDK in 2026 — an honest guide](https://asymm.systems/research/choosing-a-jdk-2026.html) — vendor-by-vendor comparison across Temurin, Corretto, Zulu, Liberica, Oracle, Microsoft, Red Hat, SapMachine, IBM Semeru, GraalVM, and Eliya. Written by us, but honest about when Eliya is not the right pick.
+[Choosing a JDK in 2026](https://asymm.systems/research/choosing-a-jdk-2026.html): a vendor-by-vendor comparison across Temurin, Corretto, Zulu, Liberica, Oracle, Microsoft, Red Hat, SapMachine, IBM Semeru, GraalVM, and Eliya, with the cases where Eliya is not the right pick called out.
 
 ## Documentation
 
@@ -162,11 +157,11 @@ Every release ships with `SHA256SUMS.txt.asc` covering all per-arch artefacts. T
 
 ## License
 
-GNU General Public License, version 2, with the Classpath Exception (GPLv2+CE) — inherited from upstream OpenJDK. See [LICENSE](LICENSE). The Asymm overlay ([ADR-00020](https://github.com/asymmsystems/asymm-jdk/blob/main/architecture/decision/adr-00020-elf-launchers-and-execstack.md)) is licensed compatibly.
+GNU General Public License, version 2, with the Classpath Exception (GPLv2+CE), inherited from upstream OpenJDK. See [LICENSE](LICENSE). The Asymm overlay ([ADR-00020](https://github.com/asymmsystems/asymm-jdk/blob/main/architecture/decision/adr-00020-elf-launchers-and-execstack.md)) is licensed compatibly.
 
 ## Acknowledgments
 
-Eliya is built on top of OpenJDK — a community effort by Oracle, Red Hat, IBM, Microsoft, Amazon, SAP, Tencent, BellSoft, Azul, the broader OpenJDK Adoption Group, and individual contributors. Eliya adds the strategic-direction overlay, operational packaging, signing discipline, the audit-ready provenance pipeline, and the Asymm CLI surface; the underlying Java platform is theirs. Thank you.
+Eliya is built on top of OpenJDK, a community effort by Oracle, Red Hat, IBM, Microsoft, Amazon, SAP, Tencent, BellSoft, Azul, the broader OpenJDK Adoption Group, and individual contributors. Eliya adds the two `-XX` profile flags, the operational packaging, the signing and release pipeline, and the `asymm` CLI; the underlying Java platform is theirs. Thank you.
 
 ---
 

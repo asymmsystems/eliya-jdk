@@ -17,6 +17,6 @@ All notable releases of Eliya are documented here. Newest first.
 **Deferred to Phase 2:** Continuous JFR and unified GC logging are Phase 2 work, not active in 25.0.3.
 
 **Provenance:**
-- `conf/security/java.security` is bit-identical to upstream (PATCHES.md §6).
+- `conf/security/java.security` is bit-identical to upstream (PATCHES.md section 6).
 - Release artefacts signed with the Eliya release key (Ed25519, ADR-00002).
 - Builds are bit-for-bit reproducible from the source tarball attached to this release.
