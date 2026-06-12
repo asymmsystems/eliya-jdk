@@ -57,21 +57,21 @@ Crash dumps follow the same layout under a `crash/` category, producing a file p
 
 When `EliyaProfile=Production`, Eliya sets the following defaults - *only* when the user has not set the flag explicitly on the command line. This preserves user-explicit-wins semantics: any value the operator passes on the command line beats Eliya's default.
 
-### Phase 1 (shipped 25.0.3 — six ergonomics activated via `FLAG_SET_ERGO`)
+### Phase 1 (shipped 25.0.3, six ergonomics activated via `FLAG_SET_ERGO`)
 
 1. **Heap dump on OOM** - `HeapDumpOnOutOfMemoryError=true`, with `HeapDumpPath` set to `build_eliya_path("heap-dumps")`.
-2. **Native Memory Tracking summary** - `NativeMemoryTracking="summary"`.
-3. **Container awareness** - `UseContainerSupport=true` (reinforces upstream default).
-4. **Crash dump generation** - `ErrorFile` set to `build_eliya_error_file_path()`; `CreateCoredumpOnCrash=true`.
-5. **Adaptive diagnostic path layout** - all path-bearing flags above use the layout from §2–§3, giving ADR-00006's `service/replica/category` structure (collapsing to `service/category` when replica attribution is not meaningful) without per-deployment configuration.
+2. **Exit on OOM** - `ExitOnOutOfMemoryError=true`. The process exits non-zero when an `OutOfMemoryError` is thrown, letting orchestrators (systemd, Kubernetes) restart on a clean baseline rather than degrade in place.
+3. **Native Memory Tracking summary** - `NativeMemoryTracking="summary"`.
+4. **Predictable crash log path** - `ErrorFile` set to `build_eliya_error_file_path()`; `CreateCoredumpOnCrash=true`. The path-bearing flags at items 1 and 4 use the `service/replica/category` layout from §2-§3 (collapsing to `service/category` when replica attribution is not meaningful), so post-mortem artefacts land in a predictable location without per-deployment configuration.
+5. **Container support reinforced** - `UseContainerSupport=true`. No-op when already set; recorded explicitly so operators auditing flags see the value originated from `EliyaProfile=Production`.
 6. **Unlocked diagnostic VM options** - `UnlockDiagnosticVMOptions=true`, enabling subsequent diagnostic flags operators may want.
 
-### Phase 2 additions (planned — reclassified from Phase 1.5 per ADR-1 sec.11 2026-06-11)
+### Phase 2 additions (planned)
 
-Two additional defaults are planned for Phase 2 alongside the bundled diagnostic tools work. They cannot use `FLAG_SET_ERGO` (the activation mechanism is not a product flag); they need `JfrOptionSet` / `LogConfiguration` hooks. Source has `TODO(Phase1.5)` comments at `apply_production_profile()` lines 239 + 261 — target timeline shifted to Phase 2 per ADR-1 sec.11 dissolution row 2026-06-11.
+Two additional defaults are planned for Phase 2 alongside the bundled diagnostic-tools work. These cannot use `FLAG_SET_ERGO` (the activation mechanism is not a product flag); they need `JfrOptionSet` and `LogConfiguration` hooks.
 
-- **Continuous JFR (Phase 2)** - `FlightRecorder=true` plus a `StartFlightRecording` recording spec (`disk=true, maxage=24h, maxsize=250m, dumponexit=true`) using `build_eliya_path("jfr")`.
-- **Always-on GC logs (Phase 2)** - unified-logging GC configuration writing under `build_eliya_path("gc")` with rotation.
+- **Continuous JFR** - `FlightRecorder=true` plus a `StartFlightRecording` recording spec (`disk=true, maxage=24h, maxsize=250m, dumponexit=true`) using `build_eliya_path("jfr")`.
+- **Unified GC logging** - unified-logging GC configuration writing under `build_eliya_path("gc")` with rotation.
 
 ## 5. Three-Tier Conflict Detection
 
@@ -108,11 +108,11 @@ Per ADR-00009 (source file layout), Eliya source files live in a **separate top-
 | `src/hotspot/share/runtime/arguments.cpp` | `#include "runtime/eliya.hpp"` + single-line `Eliya::apply();` call at end of `apply_ergo()` | 2 |
 | `make/hotspot/lib/JvmFlags.gmk` | `JVM_SRC_ROOTS += $(TOPDIR)/src/eliya/hotspot` so the build glob picks up the Eliya mirror tree (per ADR-00009 §2.2) | 1 |
 
-**Approximately 16 lines** of upstream-file modification total, all of which are touched once during ISSUE-00001 and never again across phases. Adding a Phase 4 profile activator changes only `eliyaFlags.cpp`'s `KNOWN_PROFILES[]` table + `eliyaArguments.cpp` activator body. Adding a new diagnostic category (Phase 2+ (reclassified from Phase 1.5+ per ADR-1 sec.11 2026-06-11)) changes only `eliyaArguments.cpp`'s `Category` enum + `CATEGORY_NAMES[]` array.
+**Approximately 16 lines** of upstream-file modification total, all of which are touched once during ISSUE-00001 and never again across phases. Adding a Phase 4 profile activator changes only `eliyaFlags.cpp`'s `KNOWN_PROFILES[]` table + `eliyaArguments.cpp` activator body. Adding a new Phase 2+ diagnostic category changes only `eliyaArguments.cpp`'s `Category` enum + `CATEGORY_NAMES[]` array.
 
 **Security posture predictability** - `conf/security/java.security` is bit-identical to upstream. Cryptographic policy, TLS algorithm enablement, JCE configuration, certificate trust anchors, and the disabled-algorithms lists are precisely as upstream OpenJDK 25 ships them. Operators auditing crypto/TLS policy can rely on upstream's documented behaviour without re-baselining against an Eliya-specific defaults file.
 
-Eliya's Phase 1 security value lies in forensic observability defaults (continuous JFR (Phase 2), heap-dump-on-OOM, crash-dump generation, GC logs - see §4) and supply-chain provenance (signed releases per ADR-00002).
+Eliya's Phase 1 security value lies in forensic observability defaults activated by `EliyaProfile=Production` (the six ergonomics enumerated in §4) and supply-chain provenance (signed releases per ADR-00002). Continuous JFR and unified GC logging are Phase 2 work, not active in 25.0.3.
 
 **Security tightening** - when it happens - is the explicit job of Phase 4 compliance profiles (`EliyaProfile=PCIDSS`, `=HIPAA`, `=SOX`, `=FedRAMP`, `=GDPR`, `=ISO27001`, `=SOC2`, plus three combined profiles for cross-framework coverage). These profiles are: (a) opt-in by design - none activate without an explicit operator-set flag; (b) framework-aligned - each profile's tightening maps to the named compliance framework's control requirements; (c) layered on top of upstream defaults, never by editing `java.security` in place. The two-layer flag taxonomy in ADR-00001 exists precisely to make this opt-in tightening expressible and auditable. The baseline file stays predictable; tightening becomes a deliberate operator choice, not a hidden Eliya default.
 
