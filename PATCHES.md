@@ -1,6 +1,6 @@
 # Eliya Patches
 
-This document describes the patch surface Eliya adds on top of TCK-certified upstream OpenJDK. Patches are maintained on the `eliya/25` branch of a private mirror; a public diff URL will be added here once that mirror is public-readable. Until then, security researchers and packagers can request the patch series at `security@asymm.systems`.
+This document describes the patch surface Eliya adds on top of upstream OpenJDK 25 source. The upstream source passes the Java SE 25 Technology Compatibility Kit (TCK), but TCK conformance is a property of a specific built binary, not of source code; the Eliya binary's own TCK run under the OpenJDK Community TCK License Agreement (OCTLA) is a Phase 2 deliverable. Patches are maintained on the `eliya/25` branch of a private mirror; a public diff URL will be added here once that mirror is public-readable. Until then, security researchers and packagers can request the patch series at `security@asymm.systems`.
 
 ## 1. Flag Taxonomy
 
