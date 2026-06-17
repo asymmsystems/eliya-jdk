@@ -72,6 +72,18 @@ sha256sum -c SHA256SUMS.txt
 
 A successful `gpg --verify` (key matches Step 1's cross-checked fingerprint, signature valid) plus a clean `sha256sum -c` is the only attestation Eliya makes about an artefact's authenticity. Trust no Eliya download that does not verify against both steps.
 
+## Version-string derivation
+
+The JEP 322 BUILD field carries different meanings across Eliya's lifecycle.
+
+All 25.0.x builds prior to 25.0.4 derive the BUILD field from the Eliya source-mirror's commit count since upstream GA. The currently-published `eliya-jdk 25.0.3` ships as `25.0.3+24`, where `+24` is the count of mirror commits since `jdk-25.0.3-ga`.
+
+From 25.0.4 onward, the JEP 322 BUILD field carries upstream's GA promoted-build coordinate, and Eliya's per-build identity is carried in the JEP 322 `$OPT` field as `rN`. The 25.0.4 first GA will ship with `java.runtime.version` = `25.0.4+7-r1`, where `+7` is upstream's GA promoted-build and `r1` is Eliya's first promoted build of that source base. The 25.0.4 first respin would ship as `25.0.4+7-r2`. The banner reads `OpenJDK Runtime Environment Eliya-25.0.4 (build 25.0.4+7-r1)`.
+
+Under both schemes, the canonical per-build pin is the SHA-256 of the published artefact, signed in `SHA256SUMS.txt.asc`, or the OCI image digest for container pulls. The version-string derivation does not affect this pin: the SHA-256 of the bytes is identical regardless of how the version string was composed.
+
+The currently-published 25.0.3 GitHub Release is immutable. Any subsequent respin (e.g. an out-of-cycle CVE response before the 25.0.4 cutover) will be published as a new Release tag, not as an in-place update to the existing 25.0.3 Release.
+
 ## Further Reading
 
 - [Security overview](https://asymm.systems/product/eliya/security.html) - the published Eliya security story (forensic observability, supply-chain provenance, Phase 4 compliance profiles)
