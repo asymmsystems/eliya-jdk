@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="doc/eliya-logo.png" alt="Eliya logo" width="160">
+</p>
+
 # Eliya
 
 **The forensic-grade JVM platform from Asymm Systems for compliance-conscious production.**
